@@ -1,1 +1,11 @@
-<p>chess works!</p>
+<div class="row ml-1 px-1 border">
+    <mat-form-field>
+        <mat-label>Board dimensions</mat-label>
+        <mat-select>
+            <mat-option *ngFor="let board of boardList" [value]="board">{{board}}</mat-option>
+        </mat-select>
+    </mat-form-field>
+    <div class="columns" *ngFor="let piece of pieces">
+        <mat-checkbox>{{piece.label}}</mat-checkbox>
+    </div>
+</div>

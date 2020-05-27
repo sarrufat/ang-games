@@ -1,7 +1,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChessComponent } from '../../components/chess/chess.component';
-import { Routes, RouterModule } from '@angular/router';
+import { Routes  } from '@angular/router';
+import {MatSelectModule} from '@angular/material/select';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 
 
 const routes: Routes = [
@@ -14,7 +16,9 @@ const routes: Routes = [
 @NgModule({
   declarations: [ChessComponent],
   imports: [
-    CommonModule
+    CommonModule,
+    MatSelectModule,
+    MatCheckboxModule
   ]
 })
 export class ChessModule { }

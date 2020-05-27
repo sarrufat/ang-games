@@ -1,0 +1,6 @@
+{
+    "/v1/games": {
+        "target": "http://localhost:9000",
+        "secure": false
+    }
+}

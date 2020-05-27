@@ -1,22 +1,7 @@
-2020-05-26 13:09:37,827 [INFO] from play.api.http.EnabledFilters in play-dev-mode-akka.actor.default-dispatcher-12 - Enabled Filters (see <https://www.playframework.com/documentation/latest/Filters>):
+2020-05-27 16:05:14,335 [INFO] from play.api.http.EnabledFilters in play-dev-mode-akka.actor.default-dispatcher-9 - Enabled Filters (see <https://www.playframework.com/documentation/latest/Filters>):
 
     play.filters.csrf.CSRFFilter
     play.filters.headers.SecurityHeadersFilter
     play.filters.hosts.AllowedHostsFilter
 
-2020-05-26 13:09:37,837 [INFO] from play.api.Play in play-dev-mode-akka.actor.default-dispatcher-12 - Application started (Dev) (no global state)
-2020-05-26 13:09:38,129 [TRACE] from v1.post.PostActionBuilder in application-akka.actor.default-dispatcher-6 - invokeBlock: 
-2020-05-26 13:09:38,132 [TRACE] from v1.post.PostController in application-akka.actor.default-dispatcher-6 - index: 
-2020-05-26 13:09:38,136 [TRACE] from v1.post.PostRepositoryImpl in application-repository.dispatcher-7 - list: 
-2020-05-26 13:10:30,111 [TRACE] from v1.post.PostActionBuilder in application-akka.actor.default-dispatcher-9 - invokeBlock: 
-2020-05-26 13:10:30,115 [TRACE] from v1.post.PostController in application-akka.actor.default-dispatcher-9 - show: id = 1
-2020-05-26 13:10:30,177 [TRACE] from v1.post.PostRepositoryImpl in application-repository.dispatcher-10 - get: id = 1
-2020-05-26 13:11:24,857 [DEBUG] from application.ErrorHandler in application-akka.actor.default-dispatcher-11 - onClientError: statusCode = 404, uri = /v1/posts/1/, message = 
-2020-05-26 13:11:54,164 [TRACE] from v1.post.PostActionBuilder in application-akka.actor.default-dispatcher-12 - invokeBlock: 
-2020-05-26 13:11:54,165 [TRACE] from v1.post.PostController in application-akka.actor.default-dispatcher-12 - process: 
-2020-05-26 13:13:22,851 [TRACE] from v1.post.PostActionBuilder in application-akka.actor.default-dispatcher-5 - invokeBlock: 
-2020-05-26 13:13:22,853 [TRACE] from v1.post.PostController in application-akka.actor.default-dispatcher-5 - index: 
-2020-05-26 13:13:22,860 [TRACE] from v1.post.PostRepositoryImpl in application-repository.dispatcher-7 - list: 
-2020-05-26 13:13:23,724 [TRACE] from v1.post.PostActionBuilder in application-akka.actor.default-dispatcher-6 - invokeBlock: 
-2020-05-26 13:13:23,724 [TRACE] from v1.post.PostController in application-akka.actor.default-dispatcher-6 - index: 
-2020-05-26 13:13:23,737 [TRACE] from v1.post.PostRepositoryImpl in application-repository.dispatcher-10 - list: 
+2020-05-27 16:05:14,347 [INFO] from play.api.Play in play-dev-mode-akka.actor.default-dispatcher-9 - Application started (Dev) (no global state)
