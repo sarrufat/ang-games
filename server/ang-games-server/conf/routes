@@ -1,3 +1,3 @@
 # ->         /v1/posts               v1.post.PostRouter
 POST     /v1/games/chess            controllers.ChessPostController.solveGame
-GET      /v1/games/chess/:id         controllers.ChessPostController.checkComplention(id: String)
+GET      /v1/games/chess/:id         controllers.ChessPostController.checkCompletion(id: String)

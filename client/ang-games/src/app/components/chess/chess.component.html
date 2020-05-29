@@ -16,7 +16,7 @@
             </div>
         </div>
         <div class="row ml-2 py-2">
-            <button mat-flat-button color="primary" (click)="onSolve()">Solve</button>
+            <button mat-flat-button color="primary" (click)="onSolve()" [disabled]="formDisabled">Solve</button>
         </div>
     </div>
 </mat-card>

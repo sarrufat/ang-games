@@ -37,9 +37,10 @@ class ChessPostController @Inject()(cc: PostControllerComponents, solver: ChessA
         logger.trace("JsError")
         BadRequest("JsError")
     }
+
   }
 
-  def checkComplention(id: String): Action[AnyContent] = Action {
+  def checkCompletion(id: String): Action[AnyContent] = Action {
     implicit val w0 = Json.writes[CPosRes]
     implicit val w1 = Json.writes[CResultPositions]
     implicit val w2 = Json.writes[CRestResult]
