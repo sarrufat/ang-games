@@ -1,11 +1,22 @@
-<div class="row ml-1 px-1 border">
-    <mat-form-field>
-        <mat-label>Board dimensions</mat-label>
-        <mat-select>
-            <mat-option *ngFor="let board of boardList" [value]="board">{{board}}</mat-option>
-        </mat-select>
-    </mat-form-field>
-    <div class="columns" *ngFor="let piece of pieces">
-        <mat-checkbox>{{piece.label}}</mat-checkbox>
+<mat-card role="form">
+    <mat-card-header>Enter the combination to solve</mat-card-header>
+    <div class="container">
+        <div class="row ml-1 px-1 border">
+            <mat-form-field>
+                <mat-label>Board dimensions</mat-label>
+                <mat-select [(value)]="selected">
+                    <mat-option *ngFor="let board of boardList" [value]="board">{{board}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <div *ngFor="let piece of pieces; index as i" class="row-fluid">
+                <div class="col-sm">
+                    <mat-label> {{piece.label}}</mat-label>
+                    <input matInput min="0" max="8" type="number" [(ngModel)]="pieces[i].npieces">
+                </div>
+            </div>
+        </div>
+        <div class="row ml-2 py-2">
+            <button mat-flat-button color="primary" (click)="onSolve()">Solve</button>
+        </div>
     </div>
-</div>
+</mat-card>

@@ -5,6 +5,7 @@ import java.util.UUID
 import akka.actor.ActorSystem
 import controllers.PostFormInput
 import javax.inject.Inject
+import play.api.Logger
 import play.api.libs.concurrent.CustomExecutionContext
 
 import scala.collection.mutable
@@ -17,7 +18,7 @@ class MyExecutionContext @Inject()(system: ActorSystem)
 
 case class TaskId(taskId: String)
 
-case class TaskDef(taskId: TaskId, result: Future[Results])
+case class TaskDef(taskId: TaskId, result: Future[RestResult])
 
 /*class TaskActor extends Actor {
   override def receive: Receive = {
@@ -29,24 +30,45 @@ case class TaskDef(taskId: TaskId, result: Future[Results])
 }*/
 
 class ChessAsyncSolver @Inject()(implicit myExecutionContext: MyExecutionContext) {
+  private val logger = Logger(getClass)
+
   def createTask(input: PostFormInput): TaskId = {
-    val rgex = """([KQBRN])([0-9]+)""".r
-    val pmap = for (ent <- input.pieces) yield ent match {
-      case rgex(p, n) =>
-        (p -> n.toInt)
-      case _ =>
-        ("?" -> 0)
-    }
-    val conf = Config(input.dimension, input.dimension, pmap.toMap)
+    val pmap = for (piece <- input.pieces; if piece.npieces > 0) yield (piece.letter -> piece.npieces)
+    val dim = input.dim.take(1).toInt
+    val conf = Config(dim, dim, pmap.toMap)
     val solver = SolverV2(conf)
     val td = TaskDef(TaskId(UUID.randomUUID().toString), Future {
       solver.solve
     })
-    ChessAsyncSolver.taskMap.put(td.taskId, td)
+    /* td.result.onComplete { results =>
+      results match {
+        case Success(res) =>
+          logger.trace(s"Success onComplete $res")
+        case Failure(_) =>
+          logger.trace("Success onComplete")
+      }
+    }*/
+    ChessAsyncSolver.taskMap.put(td.taskId.taskId, td)
     td.taskId
+  }
+
+  def checkTask(taskId: String): CRestResult = ChessAsyncSolver.taskMap.get(taskId) match {
+
+    case Some(task) =>
+      if (task.result.isCompleted) {
+        task.result.value match {
+          case Some(tr) if tr.isSuccess =>
+            RestResult.map(tr.get)
+          case _ =>
+            RestResult.NoResult
+        }
+      } else
+        RestResult.NoResult
+    case None =>
+      RestResult.NoResult
   }
 }
 
 object ChessAsyncSolver {
-  val taskMap = mutable.Map[TaskId, TaskDef]()
+  val taskMap = mutable.Map[String, TaskDef]()
 }

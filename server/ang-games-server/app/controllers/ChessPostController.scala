@@ -3,14 +3,18 @@ package controllers
 import javax.inject.Inject
 import play.api.Logger
 import play.api.libs.json.{JsValue, _}
-import play.api.mvc.Action
-import solvers.chess.{ChessAsyncSolver, TaskId}
+import play.api.mvc.{Action, AnyContent}
+import solvers.chess._
 
 import scala.concurrent.ExecutionContext
 
-case class PostFormInput(dimension: Int, pieces: Array[String])
+case class PieceInput(label: String, letter: String, npieces: Int)
+
+case class PostFormInput(dim: String, pieces: Array[PieceInput])
 
 object PostFormInput {
+  implicit val formInputRead0 = Json.reads[PieceInput]
+
   implicit val formInputRead = Json.reads[PostFormInput]
 }
 
@@ -21,28 +25,25 @@ class ChessPostController @Inject()(cc: PostControllerComponents, solver: ChessA
 
 
   def solveGame: Action[JsValue] = Action(parse.json) { request =>
-      implicit  val writer = Json.writes[TaskId]
-     Json.fromJson[PostFormInput](request.body) match {
+    implicit val writer = Json.writes[TaskId]
+    logger.trace(request.toString())
+    logger.trace(request.body.toString())
+    Json.fromJson[PostFormInput](request.body) match {
       case JsSuccess(input, _) =>
         val taksId = solver.createTask(input)
-        Ok(Json.toJson[TaskId](taksId) )
-      case e @ JsError(_) =>
+        logger.trace(s"JsSuccess $input")
+        Ok(Json.toJson[TaskId](taksId))
+      case e@JsError(_) =>
+        logger.trace("JsError")
         BadRequest("JsError")
     }
   }
 
-  /* private def processJsonPost[A]()(
-     implicit request: PostRequest[A]): Future[Result] = {
-     def failure(badForm: Form[PostFormInput]) = {
-       Future.successful(BadRequest(badForm.errorsAsJson))
-     }
-
-     def success(input: PostFormInput) = {
-       postResourceHandler.create(input).map { post =>
-         Created(Json.toJson(post)).withHeaders(LOCATION -> post.link)
-       }
-     }
-
-     form.bindFromRequest().fold(failure, success)
-   } */
+  def checkComplention(id: String): Action[AnyContent] = Action {
+    implicit val w0 = Json.writes[CPosRes]
+    implicit val w1 = Json.writes[CResultPositions]
+    implicit val w2 = Json.writes[CRestResult]
+    val result = solver.checkTask(id)
+    Ok(Json.toJson[CRestResult](result))
+  }
 }

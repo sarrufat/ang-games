@@ -3,7 +3,7 @@ package solvers
 package object chess {
   // Postion on the board
   type Pos = (Int, Int)
-  type Positions = Seq[Pos]
+  type Positions = List[Pos]
   type Direction = () => Positions
   // types used by solver
   type Dimension = (Int, Int)
@@ -13,4 +13,5 @@ package object chess {
   type Results = List[ResultPositions]
   // Type used by solver 2
   type ThreateningVector = Vector[Vector[Pos]]
+
 }

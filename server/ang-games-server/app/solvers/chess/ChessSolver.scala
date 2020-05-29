@@ -1,9 +1,25 @@
 package solvers.chess
 
+case class CPosRes(piece: String, x: Int, y: Int)
+
+case class CResultPositions(positions: List[CPosRes])
+
+case class CRestResult(done: Boolean, ms: Long, combinations: List[CResultPositions])
+
+case class RestResult(ms: Long, results: Results)
+
+case object RestResult {
+  val NoResult = CRestResult(false, 0L, List())
+
+  def map(r: RestResult) = CRestResult(true, r.ms, r.results.map(comb => CResultPositions(comb.map(cp => CPosRes(cp._2.toString, cp._1._1, cp._1._2)))))
+
+}
+
 /**
   * The solver class of Chess Challenge
   */
 class SolverV2(dimension: Dimension, pieces: Seq[PieceParam]) {
+
 
   val seqPieces = (for {
     p <- pieces
@@ -79,9 +95,9 @@ class SolverV2(dimension: Dimension, pieces: Seq[PieceParam]) {
     *
     * @return
     */
-  def solve: Results = {
+  def solve: RestResult = {
     var results: Results = List[ResultPositions]()
-
+    val t0 = System.currentTimeMillis();
     def posToIndex(pos: Pos) = pos._1 * dimension._2 + pos._2
 
     def recResul(keys: String, thr: Vector[Pos], resPos: ResultPositions): Unit = {
@@ -125,7 +141,7 @@ class SolverV2(dimension: Dimension, pieces: Seq[PieceParam]) {
       _.mkString
     }
     val res = for (m <- resMap) yield m._2.head
-    res.toList
+    RestResult(System.currentTimeMillis() - t0, res.toList)
   }
 
   def verboseSolve(print: Boolean, timing: Boolean) = {
@@ -138,9 +154,9 @@ class SolverV2(dimension: Dimension, pieces: Seq[PieceParam]) {
     val t0 = System.currentTimeMillis();
     val results = solve
     val t1 = System.currentTimeMillis();
-    if (timing) println(s"Found ${results.length} solutions in " + (t1 - t0).toDouble / 1000.0 + " secs.")
-    else println(s"Found ${results.length} solutions")
-    if (print) results.foreach {
+    if (timing) println(s"Found ${results.results.length} solutions in " + (t1 - t0).toDouble / 1000.0 + " secs.")
+    else println(s"Found ${results.results.length} solutions")
+    if (print) results.results.foreach {
       printresult(_)
     }
   }
