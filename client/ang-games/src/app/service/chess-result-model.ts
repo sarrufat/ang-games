@@ -1,7 +1,9 @@
 export interface ChessResult {
     done: boolean;
     ms: number;
+    iterations: number;
     combinations: Combination[];
+    numCombinations: number;
 }
 
 export interface Combination {

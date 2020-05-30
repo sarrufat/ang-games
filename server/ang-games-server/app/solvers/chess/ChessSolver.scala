@@ -4,14 +4,14 @@ case class CPosRes(piece: String, x: Int, y: Int)
 
 case class CResultPositions(positions: List[CPosRes])
 
-case class CRestResult(done: Boolean, ms: Long, combinations: List[CResultPositions])
+case class CRestResult(done: Boolean, ms: Long, iterations: Long, combinations: List[CResultPositions])
 
-case class RestResult(ms: Long, results: Results)
+case class RestResult(ms: Long, iterations: Long, results: Results)
 
 case object RestResult {
-  val NoResult = CRestResult(false, 0L, List())
+  val NoResult = CRestResult(false, 0L, 0L, List())
 
-  def map(r: RestResult) = CRestResult(true, r.ms, r.results.map(comb => CResultPositions(comb.map(cp => CPosRes(cp._2.toString, cp._1._1, cp._1._2)))))
+  def map(r: RestResult) = CRestResult(true, r.ms, r.iterations, r.results.map(comb => CResultPositions(comb.map(cp => CPosRes(cp._2.toString, cp._1._1, cp._1._2)))))
 
 }
 
@@ -25,7 +25,7 @@ class SolverV2(dimension: Dimension, pieces: Seq[PieceParam]) {
     p <- pieces
     n <- p._1 to 1 by -1
   } yield p._2).toList.mkString
-
+  var iterations = 0L
   assert(dimension._1 > 2 && dimension._2 > 2)
 
   /**
@@ -101,7 +101,7 @@ class SolverV2(dimension: Dimension, pieces: Seq[PieceParam]) {
     def posToIndex(pos: Pos) = pos._1 * dimension._2 + pos._2
 
     def recResul(keys: String, thr: Vector[Pos], resPos: ResultPositions): Unit = {
-
+      iterations += 1
       for {
         x <- 0 until dimension._1
         y <- 0 until dimension._2
@@ -141,7 +141,7 @@ class SolverV2(dimension: Dimension, pieces: Seq[PieceParam]) {
       _.mkString
     }
     val res = for (m <- resMap) yield m._2.head
-    RestResult(System.currentTimeMillis() - t0, res.toList)
+    RestResult(System.currentTimeMillis() - t0, iterations, res.toList)
   }
 
   def verboseSolve(print: Boolean, timing: Boolean) = {

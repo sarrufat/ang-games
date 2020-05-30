@@ -1,8 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { PieceInput, ChessService } from '../../service/chess.service';
-import { TaskId } from '../../service/chess-result-model';
-import { timer, Observable, observable, Subscription} from 'rxjs';
+import { TaskId, ChessResult } from '../../service/chess-result-model';
+import { timer, Observable, observable, Subscription } from 'rxjs';
 
 
 
@@ -19,6 +19,7 @@ export class ChessComponent implements OnInit {
   selected = '4x4';
   taskId: TaskId;
   formDisabled = false;
+  chessResult: ChessResult;
 
   pieces: PieceInput[] = [
     { label: '\u2654', letter: 'K', npieces: 0 },
@@ -40,9 +41,16 @@ export class ChessComponent implements OnInit {
     this.service.solve(this.selected, this.pieces).subscribe(result => {
       this.taskId = result;
       this.formDisabled = true;
-      this.tmout = timer(10000).subscribe(observer => {
-        this.formDisabled = false;
-        this.tmout.unsubscribe();
+      this.tmout = timer(1000, 1000).subscribe(observer => {
+        this.service.checkCompletion(this.taskId).subscribe(chessResult => {
+          console.log('chessResult.done ' + chessResult.done);
+          if (chessResult.done === true) {
+            this.tmout.unsubscribe();
+            this.formDisabled = false;
+            this.chessResult = chessResult;
+            this.chessResult.numCombinations = this.chessResult.combinations.length;
+          }
+        });
       });
     });
   }

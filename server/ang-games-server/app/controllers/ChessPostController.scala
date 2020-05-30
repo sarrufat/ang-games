@@ -45,6 +45,8 @@ class ChessPostController @Inject()(cc: PostControllerComponents, solver: ChessA
     implicit val w1 = Json.writes[CResultPositions]
     implicit val w2 = Json.writes[CRestResult]
     val result = solver.checkTask(id)
+    // logger.trace(s"checkCompletion-> $result")
+
     Ok(Json.toJson[CRestResult](result))
   }
 }

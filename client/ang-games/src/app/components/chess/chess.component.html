@@ -1,4 +1,5 @@
 <mat-card role="form">
+    <p>The problem consists on finding all unique configurations of a set of normal chess pieces on a chess board with dimensions M×N where none of the pieces is in a position to take any of the others. The colour of the pieces doesn't matter, and there are no pawns among the pieces.</p>
     <mat-card-header>Enter the combination to solve</mat-card-header>
     <div class="container">
         <div class="row ml-1 px-1 border">
@@ -18,5 +19,11 @@
         <div class="row ml-2 py-2">
             <button mat-flat-button color="primary" (click)="onSolve()" [disabled]="formDisabled">Solve</button>
         </div>
+    </div>
+</mat-card>
+<mat-card>
+    <mat-card-header>Results</mat-card-header>
+    <div *ngIf="chessResult !== undefined" class="row ml-1 px-1 border">
+        <p>Found {{chessResult.numCombinations}} in {{chessResult.ms}} ms. and {{chessResult.iterations}} iterations</p>
     </div>
 </mat-card>
