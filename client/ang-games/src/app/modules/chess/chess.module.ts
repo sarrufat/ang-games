@@ -8,9 +8,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
-import { FormsModule} from '@angular/forms';
-import { ChessService} from '../../service/chess.service';
+import { FormsModule } from '@angular/forms';
+import { ChessService } from '../../service/chess.service';
 import { HttpClientModule } from '@angular/common/http';
+import { ChessCanvasComponent } from '../../components/chess.canvas/chess.canvas.component';
 
 
 
@@ -22,7 +23,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [ChessComponent],
+  declarations: [ChessComponent, ChessCanvasComponent],
   imports: [
     CommonModule,
     MatSelectModule,

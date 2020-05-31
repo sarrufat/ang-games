@@ -20,6 +20,7 @@ export class ChessComponent implements OnInit {
   taskId: TaskId;
   formDisabled = false;
   chessResult: ChessResult;
+  dimension = 4;
 
   pieces: PieceInput[] = [
     { label: '\u2654', letter: 'K', npieces: 0 },
@@ -38,6 +39,7 @@ export class ChessComponent implements OnInit {
 
   onSolve(): void {
     console.log('onSolve:' + this.selected);
+    this.dimension = +this.selected.substring(0, 1);
     this.service.solve(this.selected, this.pieces).subscribe(result => {
       this.taskId = result;
       this.formDisabled = true;

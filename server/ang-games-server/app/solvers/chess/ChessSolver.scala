@@ -4,14 +4,14 @@ case class CPosRes(piece: String, x: Int, y: Int)
 
 case class CResultPositions(positions: List[CPosRes])
 
-case class CRestResult(done: Boolean, ms: Long, iterations: Long, combinations: List[CResultPositions])
+case class CRestResult(done: Boolean, ms: Long, iterations: Long, combinations: List[CResultPositions], msg: String = "")
 
 case class RestResult(ms: Long, iterations: Long, results: Results)
 
 case object RestResult {
   val NoResult = CRestResult(false, 0L, 0L, List())
 
-  def map(r: RestResult) = CRestResult(true, r.ms, r.iterations, r.results.map(comb => CResultPositions(comb.map(cp => CPosRes(cp._2.toString, cp._1._1, cp._1._2)))))
+  def map(r: (RestResult, String)) = CRestResult(true, r._1.ms, r._1.iterations, r._1.results.map(comb => CResultPositions(comb.map(cp => CPosRes(cp._2.toString, cp._1._1, cp._1._2)))), r._2)
 
 }
 

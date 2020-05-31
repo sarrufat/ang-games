@@ -24,6 +24,7 @@
 <mat-card>
     <mat-card-header>Results</mat-card-header>
     <div *ngIf="chessResult !== undefined" class="row ml-1 px-1 border">
-        <p>Found {{chessResult.numCombinations}} in {{chessResult.ms}} ms. and {{chessResult.iterations}} iterations</p>
+        <p>{{chessResult.msg}}</p>
+        <app-chess-canvas [dimension]="dimension"></app-chess-canvas>
     </div>
 </mat-card>
