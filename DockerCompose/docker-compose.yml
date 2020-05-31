@@ -1,0 +1,23 @@
+version: "3"
+services:
+
+  web:
+    image: sarrufat/ang-games-cli:latest
+    restart: always
+    ports:
+      - "8080:80"
+    networks:
+      - backend
+
+  play:
+    image: sarrufat/ang-games-server:latest
+    restart: always
+    ports:
+      - "9000"
+    expose:
+      - "9000"
+    networks:
+      - backend
+
+networks:
+  backend:

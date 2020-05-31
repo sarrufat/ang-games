@@ -1,5 +1,4 @@
 import sbt.Keys._
-import play.sbt.PlaySettings
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayService, PlayLayoutPlugin, Common)

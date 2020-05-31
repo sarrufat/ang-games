@@ -28,20 +28,7 @@ class SolverV2(dimension: Dimension, pieces: Seq[PieceParam]) {
   var iterations = 0L
   assert(dimension._1 > 2 && dimension._2 > 2)
 
-  /**
-    * Print result as:
-    * +-+-+-+-+
-    * |*|R|*|*|
-    * +-+-+-+-+
-    * |N|*|N|*|
-    * +-+-+-+-+
-    * |*|*|*|R|
-    * +-+-+-+-+
-    * |N|*|N|*|
-    * +-+-+-+-+
-    *
-    * @param res
-    */
+
   def printresult(res: ResultPositions) = {
     println("")
 
