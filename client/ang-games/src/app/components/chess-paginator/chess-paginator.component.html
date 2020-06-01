@@ -1,0 +1,11 @@
+<div class="row-cols-4">
+    <table>
+        <td *ngFor="let data of dataSource">
+            <app-chess-canvas [dimension]="dimension" [combination]="data"></app-chess-canvas>
+        </td>
+    </table>
+</div>
+<mat-paginator #paginator [length]="chessResult.numCombinations" [pageIndex]="0" [pageSize]="4"
+    (page)="fetch($event.pageIndex)">
+    >
+</mat-paginator>

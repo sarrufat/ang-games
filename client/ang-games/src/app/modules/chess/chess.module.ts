@@ -8,10 +8,16 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+// import { MatTableModule } from '@angular/material/table';
+
 import { FormsModule } from '@angular/forms';
 import { ChessService } from '../../service/chess.service';
 import { HttpClientModule } from '@angular/common/http';
 import { ChessCanvasComponent } from '../../components/chess.canvas/chess.canvas.component';
+import { ChessPaginatorComponent } from '../../components/chess-paginator/chess-paginator.component';
+
+import { MatPaginatorModule } from '@angular/material/paginator';
+
 
 
 
@@ -23,7 +29,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [ChessComponent, ChessCanvasComponent],
+  declarations: [ChessComponent, ChessCanvasComponent, ChessPaginatorComponent],
   imports: [
     CommonModule,
     MatSelectModule,
@@ -33,7 +39,9 @@ const routes: Routes = [
     MatCardModule,
     MatButtonModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    MatPaginatorModule
+    // MatTableModule
   ],
   providers: [ChessService]
 })

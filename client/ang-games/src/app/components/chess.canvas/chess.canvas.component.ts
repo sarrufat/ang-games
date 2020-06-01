@@ -1,4 +1,5 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, Input, TemplateRef, AfterViewChecked } from '@angular/core';
+import { Combination } from '../../service/chess-result-model';
 
 const BLOCK_SIZE = 50;
 
@@ -7,10 +8,14 @@ const BLOCK_SIZE = 50;
   templateUrl: './chess.canvas.component.html',
   styleUrls: ['./chess.canvas.component.scss']
 })
-export class ChessCanvasComponent implements OnInit, AfterViewInit {
+export class ChessCanvasComponent implements OnInit, AfterViewChecked {
 
-@Input('dimension')cdim = 4;
-@ViewChild('chessboard') public canvas: ElementRef;
+  @ViewChild('piecesImg') piecesImage: ElementRef;
+
+  // tslint:disable-next-line:no-input-rename
+  @Input('dimension') cdim = 4;
+  @Input() combination: Combination;
+  @ViewChild('chessboard') public canvas: ElementRef;
   private cx: CanvasRenderingContext2D;
 
   constructor() { }
@@ -18,15 +23,28 @@ export class ChessCanvasComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
   }
 
-  public ngAfterViewInit() {
+  public ngAfterViewChecked() {
     const canvasEl: HTMLCanvasElement = this.canvas.nativeElement;
+    const piecesImages: HTMLImageElement = this.piecesImage.nativeElement;
     this.cx = canvasEl.getContext('2d');
     canvasEl.width = this.cdim * BLOCK_SIZE;
     canvasEl.height = this.cdim * BLOCK_SIZE;
     this.drawBoard(this.cx);
+    this.drawPieces(piecesImages);
   }
 
-  private drawBoard(cx: CanvasRenderingContext2D ) {
+  private drawPieces(piecesImages: HTMLImageElement) {
+    const pOrder = ['P', 'R', 'N', 'B', 'Q', 'K'];
+    for (const pos of this.combination.positions) {
+      const delta = pOrder.indexOf(pos.piece) * 50;
+      const canvasOffsetX = pos.x * BLOCK_SIZE;
+      const canvasOffsetY = pos.y * BLOCK_SIZE;
+      this.cx.drawImage(piecesImages, delta, 0, BLOCK_SIZE, BLOCK_SIZE, canvasOffsetX, canvasOffsetY, BLOCK_SIZE, BLOCK_SIZE);
+
+    }
+  }
+
+  private drawBoard(cx: CanvasRenderingContext2D) {
     for (let x = 0; x < this.cdim; x++) {
       for (let y = 0; y < this.cdim; y++) {
         const bcolor = (x + y) % 2 ? 'rgb(230,200,50)' : 'rgb(90,90,50)';

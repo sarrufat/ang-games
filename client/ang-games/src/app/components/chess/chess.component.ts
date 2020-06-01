@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { PieceInput, ChessService } from '../../service/chess.service';
 import { TaskId, ChessResult } from '../../service/chess-result-model';
-import { timer, Observable, observable, Subscription } from 'rxjs';
+import { timer, Subscription } from 'rxjs';
 
 
 
@@ -40,21 +40,28 @@ export class ChessComponent implements OnInit {
   onSolve(): void {
     console.log('onSolve:' + this.selected);
     this.dimension = +this.selected.substring(0, 1);
-    this.service.solve(this.selected, this.pieces).subscribe(result => {
-      this.taskId = result;
-      this.formDisabled = true;
-      this.tmout = timer(1000, 1000).subscribe(observer => {
-        this.service.checkCompletion(this.taskId).subscribe(chessResult => {
-          console.log('chessResult.done ' + chessResult.done);
-          if (chessResult.done === true) {
-            this.tmout.unsubscribe();
-            this.formDisabled = false;
-            this.chessResult = chessResult;
-            this.chessResult.numCombinations = this.chessResult.combinations.length;
-          }
+    let sum = 0;
+    for (const p of this.pieces) {
+      sum += p.npieces;
+    }
+    this.chessResult = undefined;
+    if (sum >= this.dimension / 2) {
+      this.service.solve(this.selected, this.pieces).subscribe(result => {
+        this.taskId = result;
+        this.formDisabled = true;
+        this.tmout = timer(1000, 1000).subscribe(observer => {
+          this.service.checkCompletion(this.taskId).subscribe(chessResult => {
+            console.log('chessResult.done ' + chessResult.done);
+            if (chessResult.done === true) {
+              this.tmout.unsubscribe();
+              this.formDisabled = false;
+              this.chessResult = chessResult;
+              this.chessResult.numCombinations = this.chessResult.combinations.length;
+            }
+          });
         });
       });
-    });
+    }
   }
 
 }
