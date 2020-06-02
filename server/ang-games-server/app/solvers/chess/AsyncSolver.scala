@@ -1,6 +1,7 @@
 package solvers.chess
 
 import java.util.UUID
+import java.util.concurrent.TimeoutException
 
 import akka.actor.ActorSystem
 import controllers.PostFormInput
@@ -10,24 +11,21 @@ import play.api.libs.concurrent.CustomExecutionContext
 
 import scala.collection.mutable
 import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.language.postfixOps
+import scala.util.Failure
 
 
 class MyExecutionContext @Inject()(system: ActorSystem)
-  extends CustomExecutionContext(system, "my.executor")
+  extends CustomExecutionContext(system, "my.executor") {
+  def getActorSystem = system
+}
 
 
 case class TaskId(taskId: String)
 
 case class TaskDef(taskId: TaskId, result: Future[(RestResult, String)])
 
-/*class TaskActor extends Actor {
-  override def receive: Receive = {
-    case  td : TaskDef  =>
-      ChessAsyncSolver.taskMap.put(td.taskId, td)
-      val results = td.either.left.map(_.solve)
-
-  }
-}*/
 
 class ChessAsyncSolver @Inject()(implicit myExecutionContext: MyExecutionContext) {
   private val logger = Logger(getClass)
@@ -49,19 +47,14 @@ class ChessAsyncSolver @Inject()(implicit myExecutionContext: MyExecutionContext
     val dim = input.dim.take(1).toInt
     val conf = Config(dim, dim, pmap.toMap)
     val solver = SolverV2(conf)
-    val td = TaskDef(TaskId(UUID.randomUUID().toString), Future {
+    val error = akka.pattern.after(60 seconds, myExecutionContext.getActorSystem.getScheduler)(Future.failed[(RestResult, String)](new TimeoutException("Computing too long")))
+    val sfuture = Future {
       val result = solver.solve
       val msg = formatMessage(conf, result.results, result.ms, result.iterations)
       (result, msg)
-    })
-    /* td.result.onComplete { results =>
-      results match {
-        case Success(res) =>
-          logger.trace(s"Success onComplete $res")
-        case Failure(_) =>
-          logger.trace("Success onComplete")
-      }
-    }*/
+    }
+
+    val td = TaskDef(TaskId(UUID.randomUUID().toString), Future.firstCompletedOf[(RestResult, String)](List(sfuture, error)))
     ChessAsyncSolver.taskMap.put(td.taskId.taskId, td)
     td.taskId
   }
@@ -71,8 +64,13 @@ class ChessAsyncSolver @Inject()(implicit myExecutionContext: MyExecutionContext
     case Some(task) =>
       if (task.result.isCompleted) {
         task.result.value match {
-          case Some(tr) if tr.isSuccess =>
-            RestResult.map(tr.get)
+          case Some(tr) =>
+            tr match {
+              case scala.util.Success(res) =>
+                RestResult.map(res)
+              case Failure(exception) =>
+                CRestResult(true, 0, 0, List(), exception.getMessage)
+            }
           case _ =>
             RestResult.NoResult
         }

@@ -105,10 +105,12 @@ class SolverV2(dimension: Dimension, pieces: Seq[PieceParam]) {
           // Verify bno threatenin
           val currTree = resPos.map(_._1)
           if (!thrK.exists(currTree.contains(_))) {
-            if (keys.length() == 1) results = results :+ ((resPos :+ ((x, y), keys(0))).sortBy {
-              _._1
-            })
-            else recResul(keys.drop(1), thr ++ thrK, resPos ++ List(((x, y), k)))
+            if (keys.length() == 1) {
+              results = results :+ ((resPos :+ ((x, y), keys(0))).sortBy {
+                _._1
+              })
+              if( results.length > 10000) throw new Exception("Too many results")
+            } else recResul(keys.drop(1), thr ++ thrK, resPos ++ List(((x, y), k)))
           }
         }
       }
