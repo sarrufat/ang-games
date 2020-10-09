@@ -128,5 +128,8 @@
       }
     }
   },
-  "defaultProject": "ang-games"
+  "defaultProject": "ang-games",
+  "cli": {
+    "analytics": "51bf5530-557b-4911-a90a-b846170d2d7d"
+  }
 }
