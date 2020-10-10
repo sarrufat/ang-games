@@ -1,6 +1,7 @@
 package org.sarrufat.resource.chess
 
 import app.solvers.chess.{ReactiveSolver, RestResult}
+import javax.inject.Inject
 import javax.ws.rs._
 import javax.ws.rs.core.MediaType
 import org.jboss.logging.Logger
@@ -98,21 +99,24 @@ object ChessResource {
 @Path("/v1/games/chess")
 @Produces(Array(MediaType.APPLICATION_JSON))
 @Consumes(Array(MediaType.APPLICATION_JSON))
-class ChessResource {
+class ChessResource @Inject() ( rsolver: ReactiveSolver) {
+   def this() {
+     this(null)
+   }
 
   @POST
-  def solve(input: PostFormInput) = {
+  def solve(input: PostFormInput): TaskId = {
     logger.debug(s"solve: $input")
 
     val task = new TaskId
-    task.taskId = ReactiveSolver.send(input)
+    task.taskId = rsolver.send(input)
     task
   }
 
   @GET
   @Path("/{taskId}")
   def check(@PathParam("taskId") taskId: String): JResult = {
-    ReactiveSolver.checkId(taskId) match {
+    rsolver.checkId(taskId) match {
       case Some(r) =>
         JResult(r)
       case None =>
