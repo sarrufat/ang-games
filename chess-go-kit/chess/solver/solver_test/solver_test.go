@@ -11,25 +11,27 @@ var _ = Describe("Solver", func() {
 	var (
 		board Board
 
-		kings   []Threatening
-		knights []Threatening
-		bishops []Threatening
-		rooks   []Threatening
-		queens  []Threatening
+		kings   []PieceBase
+		knights []PieceBase
+		bishops []PieceBase
+		rooks   []PieceBase
+		queens  []PieceBase
 	)
 	BeforeSuite(func() {
-		board = Board{Dimension: [2]int{8, 8}}
-		testPositions := []Pos{{}, {7, 0}, {0, 7}, {7, 7}}
+		board = Board{Dimension: 8}
+		testPositions := []Pos{{}, {X: 7}, {Y: 7}, {X: 7, Y: 7}}
+		builder := NewPieceBuilder()
 		for _, pos := range testPositions {
-			kings = append(kings, &King{PieceBase: PieceBase{Board: &board, Position: pos}})
-			knights = append(knights, &Knight{PieceBase: PieceBase{Board: &board, Position: pos}})
-			bishops = append(bishops, &Bishop{PieceBase: PieceBase{Board: &board, Position: pos}})
-			rooks = append(rooks, &Rook{PieceBase: PieceBase{Position: pos, Board: &board}})
-			queens = append(queens, &Queen{PieceBase: PieceBase{Position: pos, Board: &board}})
+			kings = append(kings, builder.Build(CKing, pos, &board))
+			knights = append(knights, builder.Build(CKnight, pos, &board))
+			bishops = append(bishops, builder.Build(CBishop, pos, &board))
+			rooks = append(rooks, builder.Build(CRook, pos, &board))
+			queens = append(queens, builder.Build(CQueen, pos, &board))
+
 		}
 	})
 
-	Describe("Threatening", func() {
+	Describe("PieceBase", func() {
 		Context("King With different board positions", func() {
 			It("Should report correct lenght on the corners", func() {
 				checkIt(kings, 3)
@@ -59,7 +61,7 @@ var _ = Describe("Solver", func() {
 	})
 })
 
-func checkIt(ts []Threatening, expeted int) {
+func checkIt(ts []PieceBase, expeted int) {
 	for _, k := range ts {
 		Expect(len(k.Threatening())).Should(Equal(expeted))
 	}

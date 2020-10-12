@@ -1,6 +1,6 @@
 package solver
 
-type BoardDim = [2]int
+type BoardDim = int
 
 type PieceParam struct {
 	Piece  byte
@@ -17,42 +17,109 @@ type ChessParam = []PieceParam
 
 type Board struct {
 	Dimension BoardDim
-	pMap      map[Pos]PieceBase
+	pMap      map[Pos]pieceBase
 }
 type IBoard interface {
 	isInside(x, y int) bool
+	threateningForPType(byte) map[Pos]ThreateningVector
 }
-type PieceBase struct {
-	Threatening
+type pieceBase struct {
+	PieceBase
+	cType    byte
 	Position Pos
 	Board    *Board
 }
 
 type King struct {
-	PieceBase
+	pieceBase
 }
 type Knight struct {
-	PieceBase
+	pieceBase
 }
 type Bishop struct {
-	PieceBase
+	pieceBase
 }
 type Rook struct {
-	PieceBase
+	pieceBase
 }
 type Queen struct {
-	PieceBase
+	pieceBase
 }
 
-type Threatening interface {
+type PieceBase interface {
 	Threatening() ThreateningVector
+	SetPos(pos Pos)
 }
 
-type DirectionalMove interface {
+type PieceBuilder interface {
+	Build(pt byte, pos Pos, board *Board) PieceBase
+}
+
+type pieceBuilder struct {
+}
+
+func (builder *pieceBuilder) Build(pt byte, pos Pos, board *Board) PieceBase {
+	var newPiece PieceBase
+	switch pt {
+	case CKing:
+		newPiece = &King{pieceBase: pieceBase{
+			cType:    CKing,
+			Position: pos,
+			Board:    board,
+		}}
+	case CBishop:
+		newPiece = &Bishop{pieceBase: pieceBase{
+			cType:    CBishop,
+			Position: pos,
+			Board:    board,
+		}}
+	case CKnight:
+		newPiece = &Knight{pieceBase: pieceBase{
+			cType:    CKnight,
+			Position: pos,
+			Board:    board,
+		}}
+	case CQueen:
+		newPiece = &Queen{pieceBase: pieceBase{
+			cType:    CQueen,
+			Position: pos,
+			Board:    board,
+		}}
+	case CRook:
+		newPiece = &Rook{pieceBase: pieceBase{
+			cType:    CRook,
+			Position: pos,
+			Board:    board,
+		}}
+	}
+	return newPiece
+}
+
+func NewPieceBuilder() PieceBuilder {
+	return &pieceBuilder{}
 }
 
 func (board *Board) isInside(x, y int) bool {
-	return x >= 0 && y >= 0 && x < board.Dimension[0] && y < board.Dimension[1]
+	return x >= 0 && y >= 0 && x < board.Dimension && y < board.Dimension
+}
+
+func (board *Board) threateningForPType(pt byte) map[Pos]ThreateningVector {
+	builder := NewPieceBuilder()
+	piece := builder.Build(pt, Pos{}, board)
+	rMap := make(map[Pos]ThreateningVector)
+	for x := 0; x < board.Dimension; x++ {
+		for y := 0; y < board.Dimension; y++ {
+			pos := Pos{X: x, Y: y}
+			piece.SetPos(pos)
+			rMap[pos] = piece.Threatening()
+		}
+	}
+	return rMap
+}
+
+func (p *pieceBase) SetPos(pos Pos) {
+	p.Position.X = pos.X
+	p.Position.Y = pos.Y
 }
 
 func (k *King) Threatening() ThreateningVector {
@@ -111,8 +178,8 @@ func (b *Bishop) Threatening() ThreateningVector {
 
 func (q *Queen) Threatening() ThreateningVector {
 	var tres ThreateningVector
-	asBishop := Bishop{PieceBase: PieceBase{Position: q.Position, Board: q.Board}}
-	asRook := Rook{PieceBase: PieceBase{Position: q.Position, Board: q.Board}}
+	asBishop := Bishop{pieceBase: pieceBase{Position: q.Position, Board: q.Board}}
+	asRook := Rook{pieceBase: pieceBase{Position: q.Position, Board: q.Board}}
 	tres = append(tres, asBishop.Threatening()...)
 	tres = append(tres, asRook.Threatening()...)
 	return tres
@@ -145,18 +212,26 @@ func (b *Rook) Threatening() ThreateningVector {
 	return tres
 }
 
-func vectorIncr(pos, ipos Pos, check func(Pos) bool) Positions {
+func vectorIncr(pos, iPos Pos, check func(Pos) bool) Positions {
 	var rPos Positions
-	newPos := Pos{X: pos.X + ipos.X, Y: pos.Y + ipos.Y}
+	newPos := Pos{X: pos.X + iPos.X, Y: pos.Y + iPos.Y}
 	if check(newPos) {
 		rPos = append(rPos, newPos)
-		rPos = append(rPos, vectorIncr(newPos, ipos, check)...)
+		rPos = append(rPos, vectorIncr(newPos, iPos, check)...)
 	}
 	return rPos
 }
 
+const (
+	CKing   byte = 'K'
+	CBishop byte = 'B'
+	CRook   byte = 'R'
+	CQueen  byte = 'Q'
+	CKnight byte = 'N'
+)
+
 var (
 	// (1, -2), (2, -1), (2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2)
-	knightMVectors = []Pos{Pos{X: 1, Y: -2}, {X: 2, Y: -1}, {X: 2, Y: 1}, {X: 1, Y: 2}, {X: -1, Y: 2}, {X: -2, Y: 1},
+	knightMVectors = []Pos{{X: 1, Y: -2}, {X: 2, Y: -1}, {X: 2, Y: 1}, {X: 1, Y: 2}, {X: -1, Y: 2}, {X: -2, Y: 1},
 		{X: -2, Y: -1}, {X: -1, Y: -2}}
 )
