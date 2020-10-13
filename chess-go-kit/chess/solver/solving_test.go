@@ -1,7 +1,7 @@
 package solver
 
 import (
-	"../../chess"
+	chess "../../chess/common"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"testing"
@@ -36,8 +36,11 @@ var _ = Describe("Solving", func() {
 						Npieces: 8,
 					}},
 				}
-				solution, _ := s.Solve(problem)
-				Expect(len(solution)).Should(Equal(92))
+				s.Solve(problem, func(ms int64, iter int32, res [][]chess.ResultPosition, err error) {
+					Expect(err).Should(BeNil())
+					Expect(len(res)).Should(Equal(92))
+				})
+
 			})
 		})
 	})

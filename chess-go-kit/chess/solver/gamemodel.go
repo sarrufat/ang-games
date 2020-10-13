@@ -17,8 +17,8 @@ type ChessParam = []PieceParam
 
 type Board struct {
 	Dimension BoardDim
-	pMap      map[Pos]pieceBase
 }
+
 type IBoard interface {
 	isInside(x, y int) bool
 	threateningForPType(byte) map[Pos]ThreateningVector

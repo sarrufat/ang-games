@@ -1,14 +1,16 @@
 package solver
 
 import (
-	"../../chess"
-	// "fmt"
+	chess "../../chess/common"
+	"errors"
+	"sort"
 	"strconv"
+	"time"
 )
 
 type Solver interface {
 	threateningForPType([]chess.Piece) map[byte]map[Pos]ThreateningVector
-	Solve(p chess.Problem) ([][]chess.ResultPosition, error)
+	Solve(p chess.Problem, observe func(ms int64, iter int32, res [][]chess.ResultPosition, err error))
 	setBoard(b *Board)
 }
 
@@ -22,10 +24,11 @@ func NewSolver() Solver {
 
 type anonRec func(chess.Piece, []chess.Piece, ThreateningVector, []chess.ResultPosition)
 
-func (s *solver) Solve(p chess.Problem) ([][]chess.ResultPosition, error) {
+func (s *solver) Solve(p chess.Problem, observe func(ms int64, iter int32, res [][]chess.ResultPosition, err error)) {
 	dim, err := strconv.Atoi(p.Dim[0:1])
 	if err != nil {
-		return nil, err
+		observe(0, 0, [][]chess.ResultPosition{}, err)
+		return
 	}
 	s.board = &Board{
 		Dimension: dim,
@@ -34,9 +37,19 @@ func (s *solver) Solve(p chess.Problem) ([][]chess.ResultPosition, error) {
 	var iterations int32
 	var recSolve anonRec
 	var results [][]chess.ResultPosition
-
+	t0 := time.Now()
 	recSolve = func(actual chess.Piece, reaming []chess.Piece, tVector ThreateningVector, resPos []chess.ResultPosition) {
+		if err != nil {
+			return
+		}
 		iterations += 1
+		// Timeout
+		if iterations % 10000 == 0 {
+			if time.Since(t0).Seconds() >=60 {
+				err = errors.New("Computation time exceeded")
+				return
+			}
+		}
 		//	fmt.Printf("iterations = %d %d %v\n", iterations, len(reaming), results)
 		for x := 0; x < dim; x++ {
 			for y := 0; y < dim; y++ {
@@ -52,13 +65,15 @@ func (s *solver) Solve(p chess.Problem) ([][]chess.ResultPosition, error) {
 				actualRPos := append(resPos, chess.ResultPosition{Piece: actual.Letter, X: x, Y: y})
 				if !searchResult(resPos, x, y) && !threatPos(tVector, x, y) {
 					vector := tMap[actual.Letter[0]][Pos{X: x, Y: y}]
-
 					if !threatPosInResult(vector, resPos) {
-						//			fmt.Printf("OK %d (%d, %d) = respos %v, pieces = %v\n", iterations, x, y, resPos, reaming)
 						if len(reaming) == 0 { // solution found
-							results = append(results, actualRPos)
-							//				fmt.Println(actualRPos)
-							// TODO: Limit max results
+							var solution = make([]chess.ResultPosition, len(actualRPos))
+							copy(solution, actualRPos)
+							results = append(results, solution)
+							// Limit max results
+							if len(results) > 10000 {
+								err = errors.New("Results limit exceeded")
+							}
 						} else {
 							expVector := append(tVector, vector...)
 							expResult := actualRPos
@@ -69,26 +84,60 @@ func (s *solver) Solve(p chess.Problem) ([][]chess.ResultPosition, error) {
 				}
 			}
 		}
-
 	}
-	fPieces := flatten(p.Pieces)
+	fPieces := flatten(p.Pieces, tMap)
 	//	for x := 0; x < dim; x++ {
 	//for y := 0; y < dim; y++ {
 	// resPos := []chess.ResultPosition{{Piece: fPieces[0].Letter, X: x, Y: x}}
 	recSolve(fPieces[0], fPieces[1:], ThreateningVector{}, []chess.ResultPosition{})
 	//	}
 	//	}
-
-	return results, nil
+	elapsed := time.Since(t0)
+	observe(elapsed.Milliseconds(), iterations, results, err)
 }
-func flatten(pieces []chess.Piece) []chess.Piece {
+func flatten(pieces []chess.Piece, pmap map[byte]map[Pos]ThreateningVector ) []chess.Piece {
 	var out []chess.Piece
-	for _, p := range pieces {
+	for _, p := range priority(pieces, pmap) {
 		for i := 0; i < p.Npieces; i++ {
 			out = append(out, p)
 		}
 	}
 	return out
+}
+
+type arrayPieces struct {
+	pieces []chess.Piece
+	pmap map[string]int
+}
+
+
+func (ap arrayPieces) Len() int {
+	return len(ap.pieces)
+}
+func (ap arrayPieces) Swap(i, j int) {
+	ap.pieces[j] , ap.pieces[i] = ap.pieces[i], ap.pieces[j]
+}
+func (ap arrayPieces) Less(i, j int) bool {
+	v1, ok1 := ap.pmap[ap.pieces[i].Letter]
+	if ok1 {
+		v2, ok2 := ap.pmap[ap.pieces[j].Letter]
+		if ok2 {
+			return v1 < v2
+		}
+	}
+	return false
+}
+func priority(pieces []chess.Piece, pmap map[byte]map[Pos]ThreateningVector )  []chess.Piece {
+	priorityMap := make(map[string]int)
+	for k, e := range  pmap {
+		priorityMap[strconv.Itoa(int(k))] = len(e)
+	}
+	aps := arrayPieces{
+		pieces: pieces,
+		pmap:   priorityMap,
+	}
+	sort.Sort(aps)
+	return aps.pieces
 }
 func threatPosInResult(tVector ThreateningVector, results []chess.ResultPosition) bool {
 	for _, v := range tVector {

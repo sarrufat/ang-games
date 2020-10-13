@@ -1,28 +1,26 @@
 package chess
 
-import "errors"
+import (
+	. "./common"
+	"./solver"
+	"errors"
+	"github.com/google/uuid"
+	"log"
+	"os"
+)
 
+
+var logger = log.New(os.Stdout, "service:", log.LstdFlags)
 // ErrInvalidArgument is returned when one or more arguments are invalid.
 var ErrInvalidArgument = errors.New("invalid argument")
+
+var solMap = make(map[string]Result)
+var mapChan = make(chan TResult)
 
 // Service
 type Service interface {
 	Solve(problem Problem) (TaskId, error)
 	CheckResult(id TaskId) (Result, error)
-}
-
-// Piece
-type Piece struct {
-	// Not used
-	//	Label   string `json:"label"`
-	Letter  string `json:"letter"`
-	Npieces int    `json:"npieces"`
-}
-
-// Problem
-type Problem struct {
-	Dim    string  `json:"dim""`
-	Pieces []Piece `json:"pieces"`
 }
 
 // Return TaskID
@@ -31,19 +29,8 @@ type TaskId struct {
 	TaskId string `json:"taskId"`
 }
 
-// Result
-type Result struct {
-	Done        bool             `json:"done"`
-	Millis      int64            `json:"ms"`
-	NIterations int32            `json:"iterations"`
-	Positions   []ResultPosition `json:"positions"`
-}
-
-// Position
-type ResultPosition struct {
-	Piece string `json:"piece"`
-	X     int    `json:"x"`
-	Y     int    `json:"y"`
+func newTask() TaskId {
+	return TaskId{TaskId: uuid.New().String()}
 }
 
 type ServiceImpl struct {
@@ -53,12 +40,59 @@ func (ServiceImpl) Solve(problem Problem) (TaskId, error) {
 	if len(problem.Dim) < 1 {
 		return TaskId{}, ErrInvalidArgument
 	}
-	return TaskId{TaskId: "12345"}, nil
+	task := newTask()
+	s := solver.NewSolver()
+	go func(out chan<- TResult) {
+		out <- TResult{
+			Result: Result{},
+			TaskId: task.TaskId,
+		}
+		s.Solve(problem, func(ms int64, iter int32, res [][]ResultPosition, err error) {
+			if err != nil {
+				logger.Printf("Solve error: %v", err)
+				out <- TResult{
+					Result: Result{Done: true, Millis: ms, NIterations: iter},
+					TaskId: task.TaskId,
+				}
+			} else {
+				var combs []Combination
+				for _, comb := range res {
+					combs = append(combs, Combination{Positions: comb})
+				}
+				out <- TResult{
+
+					Result: Result{Done: true, Millis: ms, NIterations: iter, Combination: combs},
+					TaskId: task.TaskId,
+				}
+			}
+		})
+
+	}(mapChan)
+
+	return task, nil
+}
+
+func NewResultConsumer() func() {
+	return func() {
+		for r := range mapChan {
+			logger.Printf("solMap[r.TaskId] %s %s %v %s %d", r.TaskId, "done", r.Done, "Results", len(r.Result.Combination))
+			solMap[r.TaskId] = r.Result
+		}
+	}
 }
 
 func (ServiceImpl) CheckResult(id TaskId) (Result, error) {
+	logger.Printf("CheckResult %s", id.TaskId)
+
 	if len(id.TaskId) < 1 {
 		return Result{}, ErrInvalidArgument
 	}
+	res, ok := solMap[id.TaskId]
+	if ok {
+	//	logger.Printf("%v", res.Combination)
+		return res, nil
+	}
+	logger.Print("CheckResult not found")
+
 	return Result{}, nil
 }

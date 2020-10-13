@@ -53,6 +53,7 @@ export class ChessComponent implements OnInit {
           this.service.checkCompletion(this.taskId).subscribe(chessResult => {
             console.log('chessResult.done ' + chessResult.done);
             if (chessResult.done === true) {
+              console.log(chessResult.combinations)
               this.tmout.unsubscribe();
               this.formDisabled = false;
               this.chessResult = chessResult;

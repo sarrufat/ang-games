@@ -38,6 +38,10 @@ func main() {
 	http.Handle("/", mux)
 	errs := make(chan error, 2)
 	go func() {
+		rCon := chess.NewResultConsumer()
+		rCon()
+	}()
+	go func() {
 		logger.Log("transport", "http", "address", *httpAddr, "msg", "listening")
 		errs <- http.ListenAndServe(*httpAddr, nil)
 	}()
