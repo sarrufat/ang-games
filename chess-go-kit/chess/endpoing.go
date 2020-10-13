@@ -1,9 +1,9 @@
 package chess
 
 import (
-	. "./common"
 	"context"
 	"github.com/go-kit/kit/endpoint"
+	. "github.com/sarrufat/ang-games/chess-go-kit/chess/common"
 )
 
 func makeChessEndpont(s Service) endpoint.Endpoint {

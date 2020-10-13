@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./chess"
 	"flag"
 	"github.com/go-kit/kit/log"
+	"github.com/sarrufat/ang-games/chess-go-kit/chess"
 	"net/http"
 	"os"
 )

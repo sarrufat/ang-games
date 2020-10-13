@@ -1,16 +1,16 @@
 package chess
 
 import (
-	. "./common"
-	"./solver"
 	"errors"
 	"github.com/google/uuid"
+	. "github.com/sarrufat/ang-games/chess-go-kit/chess/common"
+	"github.com/sarrufat/ang-games/chess-go-kit/chess/solver"
 	"log"
 	"os"
 )
 
-
 var logger = log.New(os.Stdout, "service:", log.LstdFlags)
+
 // ErrInvalidArgument is returned when one or more arguments are invalid.
 var ErrInvalidArgument = errors.New("invalid argument")
 
@@ -89,7 +89,7 @@ func (ServiceImpl) CheckResult(id TaskId) (Result, error) {
 	}
 	res, ok := solMap[id.TaskId]
 	if ok {
-	//	logger.Printf("%v", res.Combination)
+		//	logger.Printf("%v", res.Combination)
 		return res, nil
 	}
 	logger.Print("CheckResult not found")

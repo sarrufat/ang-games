@@ -1,8 +1,8 @@
 package solver
 
 import (
-	chess "../../chess/common"
 	"errors"
+	chess "github.com/sarrufat/ang-games/chess-go-kit/chess/common"
 	"sort"
 	"strconv"
 	"time"
@@ -44,8 +44,8 @@ func (s *solver) Solve(p chess.Problem, observe func(ms int64, iter int32, res [
 		}
 		iterations += 1
 		// Timeout
-		if iterations % 10000 == 0 {
-			if time.Since(t0).Seconds() >=60 {
+		if iterations%10000 == 0 {
+			if time.Since(t0).Seconds() >= 60 {
 				err = errors.New("Computation time exceeded")
 				return
 			}
@@ -95,7 +95,7 @@ func (s *solver) Solve(p chess.Problem, observe func(ms int64, iter int32, res [
 	elapsed := time.Since(t0)
 	observe(elapsed.Milliseconds(), iterations, results, err)
 }
-func flatten(pieces []chess.Piece, pmap map[byte]map[Pos]ThreateningVector ) []chess.Piece {
+func flatten(pieces []chess.Piece, pmap map[byte]map[Pos]ThreateningVector) []chess.Piece {
 	var out []chess.Piece
 	for _, p := range priority(pieces, pmap) {
 		for i := 0; i < p.Npieces; i++ {
@@ -107,15 +107,14 @@ func flatten(pieces []chess.Piece, pmap map[byte]map[Pos]ThreateningVector ) []c
 
 type arrayPieces struct {
 	pieces []chess.Piece
-	pmap map[string]int
+	pmap   map[string]int
 }
-
 
 func (ap arrayPieces) Len() int {
 	return len(ap.pieces)
 }
 func (ap arrayPieces) Swap(i, j int) {
-	ap.pieces[j] , ap.pieces[i] = ap.pieces[i], ap.pieces[j]
+	ap.pieces[j], ap.pieces[i] = ap.pieces[i], ap.pieces[j]
 }
 func (ap arrayPieces) Less(i, j int) bool {
 	v1, ok1 := ap.pmap[ap.pieces[i].Letter]
@@ -127,9 +126,9 @@ func (ap arrayPieces) Less(i, j int) bool {
 	}
 	return false
 }
-func priority(pieces []chess.Piece, pmap map[byte]map[Pos]ThreateningVector )  []chess.Piece {
+func priority(pieces []chess.Piece, pmap map[byte]map[Pos]ThreateningVector) []chess.Piece {
 	priorityMap := make(map[string]int)
-	for k, e := range  pmap {
+	for k, e := range pmap {
 		priorityMap[strconv.Itoa(int(k))] = len(e)
 	}
 	aps := arrayPieces{

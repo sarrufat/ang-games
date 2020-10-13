@@ -1,19 +1,20 @@
 package chess
 
 import (
-	. "./common"
 	"context"
 	"encoding/json"
 	"errors"
 	kitlog "github.com/go-kit/kit/log"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
+	. "github.com/sarrufat/ang-games/chess-go-kit/chess/common"
 	"net/http"
 )
 
 var (
 	ErrBadRouting = errors.New("bad routing")
 )
+
 func MakeHandler(bs Service, logger kitlog.Logger) http.Handler {
 	solveTrans := httptransport.NewServer(
 		makeChessEndpont(bs),
@@ -48,4 +49,3 @@ func decodeCheckRequest(_ context.Context, r *http.Request) (interface{}, error)
 	}
 	return TaskId{TaskId: id}, nil
 }
-
