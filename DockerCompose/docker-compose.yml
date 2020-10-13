@@ -10,7 +10,7 @@ services:
       - backend
 
   play:
-    image: sarrufat/ang-games-server:latest
+    image: sarrufat/chess-go-kit:latest
     restart: always
     ports:
       - "9000"
