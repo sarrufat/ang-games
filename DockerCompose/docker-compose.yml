@@ -19,5 +19,13 @@ services:
     networks:
       - backend
 
+  prometheus:
+    image: sarrufat/chess-go-prometheus:latest
+    restart: always
+    ports:
+      - "9090:9090"
+    networks:
+      - backend
+
 networks:
   backend:

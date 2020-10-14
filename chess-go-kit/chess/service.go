@@ -3,6 +3,7 @@ package chess
 import (
 	"errors"
 	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 	. "github.com/sarrufat/ang-games/chess-go-kit/chess/common"
 	"github.com/sarrufat/ang-games/chess-go-kit/chess/solver"
 	"log"
@@ -33,15 +34,20 @@ func newTask() TaskId {
 	return TaskId{TaskId: uuid.New().String()}
 }
 
-type ServiceImpl struct {
+type serviceImpl struct {
+	registry *prometheus.Registry
 }
 
-func (ServiceImpl) Solve(problem Problem) (TaskId, error) {
+func NewService(r *prometheus.Registry) Service {
+	return serviceImpl{r}
+}
+
+func (simpl serviceImpl) Solve(problem Problem) (TaskId, error) {
 	if len(problem.Dim) < 1 {
 		return TaskId{}, ErrInvalidArgument
 	}
 	task := newTask()
-	s := solver.NewSolver()
+	s := solver.NewSolver(simpl.registry)
 	go func(out chan<- TResult) {
 		out <- TResult{
 			Result: Result{},
@@ -81,7 +87,7 @@ func NewResultConsumer() func() {
 	}
 }
 
-func (ServiceImpl) CheckResult(id TaskId) (Result, error) {
+func (serviceImpl) CheckResult(id TaskId) (Result, error) {
 	logger.Printf("CheckResult %s", id.TaskId)
 
 	if len(id.TaskId) < 1 {

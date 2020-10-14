@@ -2,10 +2,18 @@ package solver
 
 import (
 	"errors"
+	//	"github.com/go-kit/kit/metrics"
+	"github.com/prometheus/client_golang/prometheus"
 	chess "github.com/sarrufat/ang-games/chess-go-kit/chess/common"
 	"sort"
 	"strconv"
 	"time"
+)
+
+var (
+	requestDuration      prometheus.Histogram
+	solutionCountByDim   *prometheus.CounterVec
+	prometheusRegistered = false
 )
 
 type Solver interface {
@@ -18,8 +26,25 @@ type solver struct {
 	board *Board
 }
 
-func NewSolver() Solver {
+func NewSolver(r *prometheus.Registry) Solver {
+	if !prometheusRegistered {
+		prometheusRegistered = true
+		r.MustRegister(requestDuration, solutionCountByDim)
+	}
 	return &solver{}
+}
+
+func init() {
+	requestDuration = prometheus.NewHistogram(prometheus.HistogramOpts{
+		Namespace: "chess",
+		Name:      "solve_time",
+		Help:      "Solver time in milliseconds",
+	})
+	solutionCountByDim = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "chess",
+		Name:      "solutions",
+		Help:      "Solutions found",
+	}, []string{"dim"})
 }
 
 type anonRec func(chess.Piece, []chess.Piece, ThreateningVector, []chess.ResultPosition)
@@ -39,6 +64,12 @@ func (s *solver) Solve(p chess.Problem, observe func(ms int64, iter int32, nsolu
 	var recSolve anonRec
 	var results [][]chess.ResultPosition
 	t0 := time.Now()
+	defer func() {
+		elapsed := time.Since(t0)
+		requestDuration.Observe(float64(elapsed))
+		solutionCountByDim.WithLabelValues(strconv.Itoa(dim)).Add(float64(foundSolutions))
+	}()
+	// Prometheus
 	recSolve = func(actual chess.Piece, reaming []chess.Piece, tVector ThreateningVector, resPos []chess.ResultPosition) {
 		if err != nil {
 			return
@@ -96,8 +127,7 @@ func (s *solver) Solve(p chess.Problem, observe func(ms int64, iter int32, nsolu
 	recSolve(fPieces[0], fPieces[1:], ThreateningVector{}, []chess.ResultPosition{})
 	//	}
 	//	}
-	elapsed := time.Since(t0)
-	observe(elapsed.Milliseconds(), iterations, foundSolutions, results, err)
+	observe(time.Since(t0).Milliseconds(), iterations, foundSolutions, results, err)
 }
 func flatten(pieces []chess.Piece, pmap map[byte]map[Pos]ThreateningVector) []chess.Piece {
 	var out []chess.Piece
