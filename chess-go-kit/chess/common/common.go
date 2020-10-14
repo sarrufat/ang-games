@@ -24,6 +24,7 @@ type Result struct {
 	Millis      int64            `json:"ms"`
 	NIterations int32            `json:"iterations"`
 	Combination   []Combination `json:"combinations"`
+	NumCombinations int `json:"numCombinations"`
 }
 type TResult struct {
 	Result

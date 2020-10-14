@@ -57,9 +57,10 @@ export class ChessComponent implements OnInit {
               this.tmout.unsubscribe();
               this.formDisabled = false;
               this.chessResult = chessResult;
-              this.chessResult.numCombinations = this.chessResult.combinations.length;
+              this.chessResult.combLenght = this.chessResult.combinations.length;
+            //  this.chessResult.numCombinations = this.chessResult.combinations.length;
               // tslint:disable-next-line:max-line-length
-              this.chessResult.msg = 'Found ' + this.chessResult.numCombinations + ' in ' + this.chessResult.ms + 'ms. with ' + this.chessResult.iterations + ' iterations';
+              this.chessResult.msg = 'Found ' + this.chessResult.numCombinations + ' in ' + this.chessResult.ms + 'ms. with ' + this.chessResult.iterations + ' path iterations';
             }
           });
         });

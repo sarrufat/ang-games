@@ -5,6 +5,7 @@ export interface ChessResult {
     combinations: Combination[];
     numCombinations: number;
     msg: string;
+    combLenght: number;
 }
 
 export interface Combination {

@@ -47,7 +47,7 @@ func (ServiceImpl) Solve(problem Problem) (TaskId, error) {
 			Result: Result{},
 			TaskId: task.TaskId,
 		}
-		s.Solve(problem, func(ms int64, iter int32, res [][]ResultPosition, err error) {
+		s.Solve(problem, func(ms int64, iter int32, nsol int, res [][]ResultPosition, err error) {
 			if err != nil {
 				logger.Printf("Solve error: %v", err)
 				out <- TResult{
@@ -61,7 +61,7 @@ func (ServiceImpl) Solve(problem Problem) (TaskId, error) {
 				}
 				out <- TResult{
 
-					Result: Result{Done: true, Millis: ms, NIterations: iter, Combination: combs},
+					Result: Result{Done: true, Millis: ms, NIterations: iter, Combination: combs, NumCombinations: nsol},
 					TaskId: task.TaskId,
 				}
 			}
@@ -75,7 +75,7 @@ func (ServiceImpl) Solve(problem Problem) (TaskId, error) {
 func NewResultConsumer() func() {
 	return func() {
 		for r := range mapChan {
-			logger.Printf("solMap[r.TaskId] %s %s %v %s %d", r.TaskId, "done", r.Done, "Results", len(r.Result.Combination))
+			logger.Printf("solMap[r.TaskId] %s %s %v %s %d", r.TaskId, "done", r.Done, "Results", r.Result.NumCombinations)
 			solMap[r.TaskId] = r.Result
 		}
 	}

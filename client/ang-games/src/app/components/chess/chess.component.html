@@ -33,7 +33,7 @@
                 </div>
             </tr>
             <tr>
-                <app-chess-paginator  *ngIf="chessResult.numCombinations > 0 && chessResult.numCombinations < 10000" [chessResult]="chessResult" [dimension]="dimension"></app-chess-paginator>
+                <app-chess-paginator [chessResult]="chessResult" [dimension]="dimension"></app-chess-paginator>
             </tr>
         </table>
     </div>

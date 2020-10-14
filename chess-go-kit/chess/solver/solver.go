@@ -10,7 +10,7 @@ import (
 
 type Solver interface {
 	threateningForPType([]chess.Piece) map[byte]map[Pos]ThreateningVector
-	Solve(p chess.Problem, observe func(ms int64, iter int32, res [][]chess.ResultPosition, err error))
+	Solve(p chess.Problem, observe func(ms int64, iter int32, nsol int, res [][]chess.ResultPosition, err error))
 	setBoard(b *Board)
 }
 
@@ -24,10 +24,10 @@ func NewSolver() Solver {
 
 type anonRec func(chess.Piece, []chess.Piece, ThreateningVector, []chess.ResultPosition)
 
-func (s *solver) Solve(p chess.Problem, observe func(ms int64, iter int32, res [][]chess.ResultPosition, err error)) {
+func (s *solver) Solve(p chess.Problem, observe func(ms int64, iter int32, nsolutions int, res [][]chess.ResultPosition, err error)) {
 	dim, err := strconv.Atoi(p.Dim[0:1])
 	if err != nil {
-		observe(0, 0, [][]chess.ResultPosition{}, err)
+		observe(0, 0, 0, [][]chess.ResultPosition{}, err)
 		return
 	}
 	s.board = &Board{
@@ -35,6 +35,7 @@ func (s *solver) Solve(p chess.Problem, observe func(ms int64, iter int32, res [
 	}
 	tMap := s.threateningForPType(p.Pieces)
 	var iterations int32
+	var foundSolutions int
 	var recSolve anonRec
 	var results [][]chess.ResultPosition
 	t0 := time.Now()
@@ -66,14 +67,17 @@ func (s *solver) Solve(p chess.Problem, observe func(ms int64, iter int32, res [
 				if !searchResult(resPos, x, y) && !threatPos(tVector, x, y) {
 					vector := tMap[actual.Letter[0]][Pos{X: x, Y: y}]
 					if !threatPosInResult(vector, resPos) {
-						if len(reaming) == 0 { // solution found
-							var solution = make([]chess.ResultPosition, len(actualRPos))
-							copy(solution, actualRPos)
-							results = append(results, solution)
-							// Limit max results
-							if len(results) > 10000 {
-								err = errors.New("Results limit exceeded")
+						if len(reaming) == 0 { // solution foun
+							foundSolutions += 1
+							if foundSolutions < 10000 {
+								var solution = make([]chess.ResultPosition, len(actualRPos))
+								copy(solution, actualRPos)
+								results = append(results, solution)
 							}
+							// Limit max results
+							// if len(results) > 10000 {
+							//	err = errors.New("Results limit exceeded")
+							// }
 						} else {
 							expVector := append(tVector, vector...)
 							expResult := actualRPos
@@ -93,7 +97,7 @@ func (s *solver) Solve(p chess.Problem, observe func(ms int64, iter int32, res [
 	//	}
 	//	}
 	elapsed := time.Since(t0)
-	observe(elapsed.Milliseconds(), iterations, results, err)
+	observe(elapsed.Milliseconds(), iterations, foundSolutions, results, err)
 }
 func flatten(pieces []chess.Piece, pmap map[byte]map[Pos]ThreateningVector) []chess.Piece {
 	var out []chess.Piece
@@ -121,7 +125,7 @@ func (ap arrayPieces) Less(i, j int) bool {
 	if ok1 {
 		v2, ok2 := ap.pmap[ap.pieces[j].Letter]
 		if ok2 {
-			return v1 < v2
+			return v2 < v1
 		}
 	}
 	return false
