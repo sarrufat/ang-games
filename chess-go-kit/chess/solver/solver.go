@@ -66,7 +66,7 @@ func (s *solver) Solve(p chess.Problem, observe func(ms int64, iter int32, nsolu
 	t0 := time.Now()
 	defer func() {
 		elapsed := time.Since(t0)
-		requestDuration.Observe(float64(elapsed))
+		requestDuration.Observe(float64(elapsed.Milliseconds()))
 		solutionCountByDim.WithLabelValues(strconv.Itoa(dim)).Add(float64(foundSolutions))
 	}()
 	// Prometheus
