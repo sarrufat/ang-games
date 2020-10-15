@@ -1,5 +1,8 @@
 # ang-games
-Angular / scala sample application. Deployed using Play Framwork and Quarkus Framwork to compare performances
+Angular / Go sample application. Implemented using go-kit framework.
+Micro service architecture using metrics - Prometheus and Grafana. 
+
+In previous versions a recursive algorithm implemented in Scala was used. The same algorithm has been implemented in Go. The performance improvement has been  an order of magnitude amazingly.
 # Chess Problem #
 
 This application is an attempt to find a general algorithm for solving a kind of mathematical chess problem known as “independence problem”, such as the Eight Queen puzzle. This algorithm tries to discover how many possible solutions exist. 
