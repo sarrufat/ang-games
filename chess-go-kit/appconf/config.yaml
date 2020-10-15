@@ -1,0 +1,6 @@
+
+chessMaxResults: 512
+
+cacheCleaningPeriod: "5s"
+
+cacheTimeOut: "2m"

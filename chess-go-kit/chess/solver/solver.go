@@ -2,6 +2,8 @@ package solver
 
 import (
 	"errors"
+	"github.com/sarrufat/ang-games/chess-go-kit/appconf"
+
 	//	"github.com/go-kit/kit/metrics"
 	"github.com/prometheus/client_golang/prometheus"
 	chess "github.com/sarrufat/ang-games/chess-go-kit/chess/common"
@@ -100,7 +102,7 @@ func (s *solver) Solve(p chess.Problem, observe func(ms int64, iter int32, nsolu
 					if !threatPosInResult(vector, resPos) {
 						if len(reaming) == 0 { // solution foun
 							foundSolutions += 1
-							if foundSolutions < 10000 {
+							if foundSolutions <= appconf.ChessMaxResults {
 								var solution = make([]chess.ResultPosition, len(actualRPos))
 								copy(solution, actualRPos)
 								results = append(results, solution)

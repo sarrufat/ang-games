@@ -4,19 +4,29 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sarrufat/ang-games/chess-go-kit/appconf"
 	. "github.com/sarrufat/ang-games/chess-go-kit/chess/common"
 	"github.com/sarrufat/ang-games/chess-go-kit/chess/solver"
 	"log"
 	"os"
+	"time"
 )
 
-var logger = log.New(os.Stdout, "service:", log.LstdFlags)
-
 // ErrInvalidArgument is returned when one or more arguments are invalid.
-var ErrInvalidArgument = errors.New("invalid argument")
 
-var solMap = make(map[string]Result)
-var mapChan = make(chan TResult)
+var (
+	logger             = log.New(os.Stdout, "service:", log.LstdFlags)
+	ErrInvalidArgument = errors.New("invalid argument")
+	solMap             = make(map[string]Result)
+	mapChan            = make(chan TResult)
+	timoutQueue        []toutElement
+)
+
+// Tout element
+type toutElement struct {
+	id   string
+	tout time.Time
+}
 
 // Service
 type Service interface {
@@ -83,10 +93,32 @@ func NewResultConsumer() func() {
 		for r := range mapChan {
 			logger.Printf("solMap[r.TaskId] %s %s %v %s %d", r.TaskId, "done", r.Done, "Results", r.Result.NumCombinations)
 			solMap[r.TaskId] = r.Result
+			timoutQueue = append(timoutQueue, toutElement{
+				id:   r.TaskId,
+				tout: time.Now().Add(appconf.CacheTimeOut),
+			})
 		}
 	}
 }
 
+func NewCleaningCacheResultTask() func() {
+	return func() {
+		for true {
+			time.Sleep(appconf.CacheCleaningPeriod)
+			now := time.Now()
+			var newQueue []toutElement
+			for _, ele := range timoutQueue {
+				if ele.tout.Before(now) {
+					logger.Println("Removing ", ele.id)
+					delete(solMap, ele.id)
+				} else {
+					newQueue = append(newQueue, ele)
+				}
+			}
+			timoutQueue = newQueue
+		}
+	}
+}
 func (serviceImpl) CheckResult(id TaskId) (Result, error) {
 	logger.Printf("CheckResult %s", id.TaskId)
 

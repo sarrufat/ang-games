@@ -5,6 +5,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sarrufat/ang-games/chess-go-kit/appconf"
 	"github.com/sarrufat/ang-games/chess-go-kit/chess"
 	"net/http"
 	"os"
@@ -31,6 +32,7 @@ func main() {
 	)
 
 	flag.Parse()
+	appconf.AppConfiguration()
 	// Logger
 	var logger log.Logger
 	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
@@ -49,8 +51,10 @@ func main() {
 	http.Handle("/", mux)
 	errs := make(chan error, 2)
 	go func() {
-		rCon := chess.NewResultConsumer()
-		rCon()
+		chess.NewResultConsumer()()
+	}()
+	go func() {
+		chess.NewCleaningCacheResultTask()()
 	}()
 	go func() {
 		logger.Log("transport", "http", "address", *httpAddr, "msg", "listening")
