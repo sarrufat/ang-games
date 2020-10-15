@@ -1,9 +1,9 @@
 package solver_test_test
 
 import (
-	. "../../solver"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/sarrufat/ang-games/chess-go-kit/chess/solver"
 	"testing"
 )
 

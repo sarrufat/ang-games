@@ -1,9 +1,10 @@
 package solver
 
 import (
-	chess "../../chess/common"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/prometheus/client_golang/prometheus"
+	chess "github.com/sarrufat/ang-games/chess-go-kit/chess/common"
 	"testing"
 )
 
@@ -13,7 +14,7 @@ var _ = Describe("Solving", func() {
 		{Letter: "Q", Npieces: 1}, {Letter: "N", Npieces: 1}}
 	var testData map[byte]map[Pos]ThreateningVector
 	BeforeSuite(func() {
-		s = NewSolver()
+		s = NewSolver(prometheus.NewRegistry())
 		s.setBoard(&Board{Dimension: 8})
 		testData = s.threateningForPType(pieces)
 	})
@@ -36,9 +37,9 @@ var _ = Describe("Solving", func() {
 						Npieces: 8,
 					}},
 				}
-				s.Solve(problem, func(ms int64, iter int32, res [][]chess.ResultPosition, err error) {
+				s.Solve(problem, func(ms int64, iter int32, nc int, res [][]chess.ResultPosition, err error) {
 					Expect(err).Should(BeNil())
-					Expect(len(res)).Should(Equal(92))
+					Expect(nc).Should(Equal(92))
 				})
 
 			})
