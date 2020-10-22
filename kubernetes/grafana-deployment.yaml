@@ -1,28 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: ./kompose convert
-    kompose.version: 1.21.0 (992df58d8)
-  creationTimestamp: null
   labels:
-    io.kompose.service: grafana
+    app: grafana
   name: grafana
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: grafana
+      app: grafana
   strategy: {}
   template:
     metadata:
-      annotations:
-        kompose.cmd: ./kompose convert
-        kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.network/backend: "true"
-        io.kompose.service: grafana
+        app: grafana
     spec:
       containers:
       - image: grafana/grafana:5.1.0
@@ -30,10 +22,3 @@ spec:
         name: grafana
         ports:
         - containerPort: 3000
-        resources: {}
-        securityContext:
-          runAsUser: 104
-      restartPolicy: Always
-      serviceAccountName: ""
-      volumes: null
-status: {}
