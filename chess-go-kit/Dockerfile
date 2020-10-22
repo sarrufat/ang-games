@@ -20,14 +20,17 @@ COPY . .
 # Build the application
 RUN go build -o main .
 
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
 # Move to /dist directory as the place for resulting binary folder
 WORKDIR /dist
 
 # Copy binary from build to main folder
-RUN cp /build/main .
+COPY --from=0  /build/main .
 
 # Export necessary port
 EXPOSE 9000
 
+COPY appconf/config.yaml /dist/appconf/config.yaml
 # Command to run when starting the container
 CMD ["/dist/main"]

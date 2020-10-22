@@ -1,2 +1,4 @@
 **/target
 server/ang-games-server/logs/application.log
+chess-go-kit/.idea/
+**/.history
